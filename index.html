@@ -695,6 +695,16 @@ footer a{color:var(--on-dark-muted)}
 .btn-gold{background:var(--gold);color:#fff}
 footer .wrap>div:last-child{text-align:right;margin-left:auto}
 @media (max-width:560px){footer .wrap>div:last-child{margin-left:0;text-align:left}footer .social{justify-content:flex-start}}
+/* v19 */
+.regular-menu>div{flex:1 1 300px;min-width:0}
+.regular-menu b{white-space:nowrap}
+@media (max-width:560px){.regular-menu b{display:block;margin:0 0 4px}}
+.lightbox img{cursor:pointer;touch-action:pan-y}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.45);background:rgba(0,0,0,.35);color:#fff;font-size:32px;line-height:1;cursor:pointer;z-index:2}
+.lb-nav:hover{background:rgba(183,133,47,.8)}
+.lb-prev{left:16px}.lb-next{right:16px}
+.lb-nav[hidden]{display:none}
+@media (max-width:560px){.lb-nav{width:44px;height:44px;font-size:26px}.lb-prev{left:6px}.lb-next{right:6px}}
 /* v17：修正 Safari 表單欄位超出外框 */
 .fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .field{min-width:0}
@@ -1034,7 +1044,9 @@ footer .wrap>div:last-child{text-align:right;margin-left:auto}
 
 <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="圖片放大">
   <button type="button" class="lb-close" aria-label="關閉">×</button>
+  <button type="button" class="lb-nav lb-prev" aria-label="上一張">‹</button>
   <img alt="">
+  <button type="button" class="lb-nav lb-next" aria-label="下一張">›</button>
   <p class="lb-cap"></p>
 </div>
 
@@ -1115,13 +1127,34 @@ footer .wrap>div:last-child{text-align:right;margin-left:auto}
   const rv = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); rv.unobserve(en.target); } }), { threshold: .12 });
   $$('.sec-title, .feature, .dish-list li, .regular-menu, .posters .photo, .venue > *, .faq-group, .findway > div, .info > div, .inq > *').forEach((el, k) => { el.classList.add('reveal'); el.style.transitionDelay = (k % 5) * 70 + 'ms'; rv.observe(el); });
 
-  // 圖片放大
+  // 圖片放大：同一區的照片可左右切換（按鈕、鍵盤左右鍵、手機左右滑）
   const lb = $('#lightbox'), lbImg = $('img', lb), lbCap = $('.lb-cap', lb);
-  const openLb = el => { const im = $('img', el); if (!im) return; lbImg.src = im.src; lbImg.alt = im.alt; lbCap.textContent = im.alt; lb.hidden = false; track('select_content', { content_type: 'image', item_id: im.alt }); };
+  const prevB = $('.lb-prev', lb), nextB = $('.lb-next', lb);
+  let group = [], gi = 0;
+  const show = i => {
+    gi = (i + group.length) % group.length;
+    const im = $('img', group[gi]); lbImg.src = im.src; lbImg.alt = im.alt;
+    lbCap.textContent = im.alt + (group.length > 1 ? `（${gi + 1} / ${group.length}）` : '');
+  };
+  const openLb = el => {
+    const box = el.closest('.venue-photos, .posters, .dish-list, .features') || el.parentElement;
+    group = $$('.zoom', box).filter(z => $('img', z));
+    if (!group.length) return;
+    const multi = group.length > 1; prevB.hidden = nextB.hidden = !multi;
+    show(Math.max(0, group.indexOf(el))); lb.hidden = false;
+    track('select_content', { content_type: 'image', item_id: $('img', el).alt });
+  };
   const closeLb = () => { lb.hidden = true; lbImg.src = ''; };
   $$('.zoom').forEach(el => { el.addEventListener('click', () => openLb(el)); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLb(el); } }); });
+  prevB.addEventListener('click', e => { e.stopPropagation(); show(gi - 1); });
+  nextB.addEventListener('click', e => { e.stopPropagation(); show(gi + 1); });
+  lbImg.addEventListener('click', e => { e.stopPropagation(); if (group.length > 1) show(gi + 1); });
   lb.addEventListener('click', closeLb);
-  addEventListener('keydown', e => { if (e.key === 'Escape' && !lb.hidden) closeLb(); });
+  $('.lb-close', lb).addEventListener('click', e => { e.stopPropagation(); closeLb(); });
+  let tx = 0;
+  lb.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40 && group.length > 1) show(gi + (dx < 0 ? 1 : -1)); }, { passive: true });
+  addEventListener('keydown', e => { if (lb.hidden) return; if (e.key === 'Escape') closeLb(); if (e.key === 'ArrowRight') show(gi + 1); if (e.key === 'ArrowLeft') show(gi - 1); });
 
   // 複製地址
   $$('[data-copy]').forEach(b => b.addEventListener('click', async () => { try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = '已複製'; setTimeout(() => b.textContent = '複製地址', 1500); } catch(e){} }));
