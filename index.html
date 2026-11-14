@@ -526,7 +526,7 @@ footer{background:#1a1510;color:var(--on-dark-muted);padding:40px 0 120px;font-s
 footer .wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}
 footer img{height:56px!important;width:auto}
 footer a{color:var(--on-dark-muted)}
-.social{display:flex;gap:12px;align-items:center}
+.social{display:flex;gap:12px;align-items:center;justify-content:flex-end}
 .social a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 10px;border:1px solid rgba(241,232,216,.3);border-radius:999px;text-decoration:none;font-size:15px}
 .social a:hover{border-color:#f0c86e;color:#f0c86e}
 .social img{width:24px;height:24px;filter:brightness(0) invert(1)}
@@ -693,6 +693,8 @@ footer a{color:var(--on-dark-muted)}
 @media (max-width:1000px){.features{grid-template-columns:1fr}.feat-text{padding:24px 28px}.feat-text p{font-size:16px}}
 @media (max-width:560px){.feature{grid-template-columns:1fr}}
 .btn-gold{background:var(--gold);color:#fff}
+footer .wrap>div:last-child{text-align:right;margin-left:auto}
+@media (max-width:560px){footer .wrap>div:last-child{margin-left:0;text-align:left}footer .social{justify-content:flex-start}}
 /* v17：修正 Safari 表單欄位超出外框 */
 .fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .field{min-width:0}
@@ -1045,7 +1047,6 @@ footer a{color:var(--on-dark-muted)}
       <div class="social">
         <a href="https://www.facebook.com/ichilongjp/" target="_blank" rel="noopener" aria-label="Facebook 粉絲專頁" data-ev="click_facebook"><img src="images/icon-facebook.svg" alt="" onerror="this.replaceWith('Facebook')"></a>
         <a href="https://www.instagram.com/ichilongjp/" target="_blank" rel="noopener" aria-label="Instagram" data-ev="click_instagram"><img src="images/icon-instagram.svg" alt="" onerror="this.replaceWith('Instagram')"></a>
-        <a href="https://line.me/R/ti/p/@zdu2429n" target="_blank" rel="noopener" aria-label="LINE 官方帳號" data-ev="click_line"><img src="images/icon-line.svg" alt="" onerror="this.replaceWith('LINE 官方帳號')"></a>
       </div>
       <div style="margin-top:10px">© <span id="yr">2026</span> 一郎餐飲有限公司</div>
     </div>
